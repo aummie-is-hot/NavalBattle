@@ -47,7 +47,7 @@ public class Main extends ApplicationAdapter {
         image = new Texture("libgdx.png");
 
         camera = new OrthographicCamera();
-        viewport = new FitViewport(800, 480, camera); // visible screen
+        viewport = new FitViewport(1700, 864, camera); // visible screen
         stage = new Stage(viewport);
 
         // Start camera centered on player

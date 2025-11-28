@@ -21593,7 +21593,7 @@ igb_Main_create = $this => {
     $this.$batch = cbggg_SpriteBatch__init_();
     $this.$image = cbgg_Texture__init_7($rt_s(447));
     $this.$camera0 = cbgg_OrthographicCamera__init_();
-    $this.$viewport0 = cbguv_FitViewport__init_0(800.0, 480.0, $this.$camera0);
+    $this.$viewport0 = cbguv_FitViewport__init_0(1700.0, 864.0, $this.$camera0);
     $this.$stage2 = cbgss_Stage__init_3($this.$viewport0);
     $this.$camera0.$position7.$set5($this.$x3 + $this.$image.$getWidth0() / 2.0, $this.$y3 + $this.$image.$getHeight0() / 2.0, 0.0);
     $this.$camera0.$update();
