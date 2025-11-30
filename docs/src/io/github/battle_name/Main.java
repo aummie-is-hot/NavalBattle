@@ -55,7 +55,7 @@ float enemyY = 200;
     public void create() {
         batch = new SpriteBatch();
         
-        background = new Texture(Gdx.files.internal("water_tile.png"));
+        background = new Texture("water_tile.png");
 background.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
 bgSprite = new Sprite(background);
