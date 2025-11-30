@@ -1,4 +1,12 @@
 i:b:/libgdx.png:2456:1
+i:b:/ship.png:47952:1
+i:b:/shipdown.png:39583:1
+i:b:/shipleft.png:36290:1
+i:b:/shipleftdown.png:44213:1
+i:b:/shipleftup.png:44369:1
+i:b:/shipright.png:36518:1
+i:b:/shiprightdown.png:44309:1
+i:b:/shiprightup.png:44268:1
 c:b:/com/badlogic/gdx/utils/lsans-15.png:10270:1
 c:b:/com/badlogic/gdx/graphics/g3d/shaders/default.vertex.glsl:9096:1
 c:b:/com/badlogic/gdx/graphics/g3d/particles/particles.fragment.glsl:820:1

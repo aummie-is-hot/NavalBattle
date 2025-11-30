@@ -44,7 +44,7 @@ public class Main extends ApplicationAdapter {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        image = new Texture("libgdx.png");
+        image = new Texture("ship.png");
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(1700, 864, camera); // visible screen
@@ -78,10 +78,44 @@ public class Main extends ApplicationAdapter {
        
         float dt = Gdx.graphics.getDeltaTime();
         
-        if (Gdx.input.isKeyPressed(Input.Keys.A))  x -= speed * dt;
-        if (Gdx.input.isKeyPressed(Input.Keys.D)) x += speed * dt;
-        if (Gdx.input.isKeyPressed(Input.Keys.W))    y += speed * dt;
-        if (Gdx.input.isKeyPressed(Input.Keys.S))  y -= speed * dt;
+        if (Gdx.input.isKeyPressed(Input.Keys.A)){
+            x -= speed * dt ; 
+            image = new Texture("shipleft.png");
+        }  
+        if (Gdx.input.isKeyPressed(Input.Keys.D)){
+            x += speed * dt;
+            image = new Texture("shipright.png");
+        } 
+        if (Gdx.input.isKeyPressed(Input.Keys.W)){
+            y += speed * dt;
+            image = new Texture("ship.png");
+        }    
+        if (Gdx.input.isKeyPressed(Input.Keys.S)){
+            y -= speed * dt;
+            image = new Texture("shipdown.png");
+        } 
+        if (Gdx.input.isKeyPressed(Input.Keys.W)&&Gdx.input.isKeyPressed(Input.Keys.D)){
+            y += speed * dt;
+            x += speed * dt;
+            image = new Texture("shiprightup.png");
+        }  
+        if (Gdx.input.isKeyPressed(Input.Keys.W)&&Gdx.input.isKeyPressed(Input.Keys.A)){
+            y += speed * dt;
+             x -= speed * dt ; 
+            image = new Texture("shipleftup.png");
+        }  
+        if (Gdx.input.isKeyPressed(Input.Keys.S)&&Gdx.input.isKeyPressed(Input.Keys.A)){
+            x -= speed * dt ; 
+            y -= speed * dt;
+            image = new Texture("shipleftdown.png");
+        } 
+        if (Gdx.input.isKeyPressed(Input.Keys.S)&&Gdx.input.isKeyPressed(Input.Keys.D)){
+            x += speed * dt;
+            y -= speed * dt;
+            image = new Texture("shiprightdown.png");
+        } 
+        
+        
   // Clamp player normally
 x = MathUtils.clamp(x, 0, WORLD_WIDTH - image.getWidth());
 y = MathUtils.clamp(y, 0, WORLD_HEIGHT - image.getHeight());
