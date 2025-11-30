@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -16,19 +17,23 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
     private SpriteBatch batch;
     private Texture image;
-    
+     private Texture image2;
+    private Sprite shipSprite;
+    private Sprite bgSprite;
     private Label label;
     private Stage stage;
-     
-     
+     private Sprite enemySprite;
+     private Texture background;
       public static final float WORLD_WIDTH = 5000;
       public static final float WORLD_HEIGHT =5000;
     
@@ -37,6 +42,11 @@ public class Main extends ApplicationAdapter {
     private Texture sheet;
     private Animation<TextureRegion> animation;
     private float stateTime;
+    ParticleEffect wakeEffect;
+    float playerRotation = 0;
+    float enemyX = 1100;
+float enemyY = 200;
+    float rotation = 0;
     int enemydead = 0;
     float x = 1000;
     float y = 100;
@@ -44,8 +54,22 @@ public class Main extends ApplicationAdapter {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        image = new Texture("ship.png");
+        
+        background = new Texture(Gdx.files.internal("water_tile.png"));
+background.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
+bgSprite = new Sprite(background);
+bgSprite.setSize(WORLD_WIDTH, WORLD_HEIGHT); 
+        image2 = new Texture(Gdx.files.internal("ship.png"));
+        enemySprite = new Sprite(image2);    
+        enemySprite.setOriginCenter();
+        
+        
+        image = new Texture(Gdx.files.internal("ship.png"));
+    shipSprite  = new Sprite(image);
+
+    // set origin to center so rotation is around the ship center
+    shipSprite.setOriginCenter();
         camera = new OrthographicCamera();
         viewport = new FitViewport(1700, 864, camera); // visible screen
         stage = new Stage(viewport);
@@ -79,43 +103,27 @@ public class Main extends ApplicationAdapter {
         float dt = Gdx.graphics.getDeltaTime();
         
         if (Gdx.input.isKeyPressed(Input.Keys.A)){
-            x -= speed * dt ; 
-            image = new Texture("shipleft.png");
+           playerRotation += 150 * dt;
         }  
         if (Gdx.input.isKeyPressed(Input.Keys.D)){
-            x += speed * dt;
-            image = new Texture("shipright.png");
-        } 
-        if (Gdx.input.isKeyPressed(Input.Keys.W)){
-            y += speed * dt;
-            image = new Texture("ship.png");
-        }    
-        if (Gdx.input.isKeyPressed(Input.Keys.S)){
-            y -= speed * dt;
-            image = new Texture("shipdown.png");
-        } 
-        if (Gdx.input.isKeyPressed(Input.Keys.W)&&Gdx.input.isKeyPressed(Input.Keys.D)){
-            y += speed * dt;
-            x += speed * dt;
-            image = new Texture("shiprightup.png");
-        }  
-        if (Gdx.input.isKeyPressed(Input.Keys.W)&&Gdx.input.isKeyPressed(Input.Keys.A)){
-            y += speed * dt;
-             x -= speed * dt ; 
-            image = new Texture("shipleftup.png");
-        }  
-        if (Gdx.input.isKeyPressed(Input.Keys.S)&&Gdx.input.isKeyPressed(Input.Keys.A)){
-            x -= speed * dt ; 
-            y -= speed * dt;
-            image = new Texture("shipleftdown.png");
-        } 
-        if (Gdx.input.isKeyPressed(Input.Keys.S)&&Gdx.input.isKeyPressed(Input.Keys.D)){
-            x += speed * dt;
-            y -= speed * dt;
-            image = new Texture("shiprightdown.png");
+           playerRotation -= 150 * dt;
         } 
         
-        
+        float angleRad = (float)Math.toRadians(playerRotation);
+float dirX = MathUtils.cos(angleRad);
+float dirY = MathUtils.sin(angleRad);
+        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+    x += dirX * speed * dt;
+    y += dirY * speed * dt;
+}
+if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+    x -= dirX * speed * dt;
+    y -= dirY * speed * dt;
+}
+        shipSprite.setRotation(playerRotation);
+        shipSprite.setPosition(x - shipSprite.getOriginX(), y - shipSprite.getOriginY());
+        enemySprite.setRotation(0); // For now static
+        enemySprite.setPosition(enemyX - enemySprite.getOriginX(), enemyY - enemySprite.getOriginY());
   // Clamp player normally
 x = MathUtils.clamp(x, 0, WORLD_WIDTH - image.getWidth());
 y = MathUtils.clamp(y, 0, WORLD_HEIGHT - image.getHeight());
@@ -138,8 +146,10 @@ camera.update();
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
         batch.setProjectionMatrix(camera.combined); // must be AFTER camera.update
         batch.begin();
-        batch.draw(image, x, y);
-        batch.draw(image, 100, 100);
+        bgSprite.draw(batch);
+        enemySprite.draw(batch);
+        shipSprite.draw(batch);
+        
         batch.end();
 
         // --- Stage ---
@@ -170,7 +180,9 @@ camera.update();
 
     @Override
     public void dispose() {
+        
         batch.dispose();
         image.dispose();
+        image2.dispose();
     }
 }
