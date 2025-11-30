@@ -13206,7 +13206,7 @@ jur_CharClass$5_contains = ($this, $ch) => {
 cbggg_VertexData = $rt_classWithoutFields(0);
 function cbgssu_ProgressBar$ProgressBarStyle() {
     let a = this; jl_Object.call(a);
-    a.$background1 = null;
+    a.$background0 = null;
     a.$disabledBackground = null;
     a.$knob = null;
     a.$disabledKnob = null;
@@ -20497,7 +20497,7 @@ cbgssu_ProgressBar_getVisualPercent = $this => {
 cbgssu_ProgressBar_getBackgroundDrawable = $this => {
     if ($this.$disabled && $this.$style.$disabledBackground !== null)
         return $this.$style.$disabledBackground;
-    return $this.$style.$background1;
+    return $this.$style.$background0;
 },
 cbgssu_ProgressBar_getKnobDrawable = $this => {
     if ($this.$disabled && $this.$style.$disabledKnob !== null)
@@ -21599,7 +21599,7 @@ function igb_Main() {
     a.$shipSprite = null;
     a.$stage2 = null;
     a.$enemySprite = null;
-    a.$background0 = null;
+    a.$bgRegion = null;
     a.$camera0 = null;
     a.$viewport0 = null;
     a.$playerRotation = 0.0;
@@ -21628,12 +21628,13 @@ igb_Main__init_0 = () => {
     return var_0;
 },
 igb_Main_create = $this => {
-    let var$1;
+    let $backgroundTexture;
     $this.$batch = cbggg_SpriteBatch__init_();
-    $this.$background0 = cbgg_Texture__init_0(cbg_Gdx_files.$internal($rt_s(447)));
-    var$1 = $this.$background0;
+    $backgroundTexture = cbgg_Texture__init_0(cbg_Gdx_files.$internal($rt_s(447)));
     cbgg_Texture$TextureWrap_$callClinit();
-    var$1.$setWrap(cbgg_Texture$TextureWrap_Repeat, cbgg_Texture$TextureWrap_Repeat);
+    $backgroundTexture.$setWrap(cbgg_Texture$TextureWrap_Repeat, cbgg_Texture$TextureWrap_Repeat);
+    $this.$bgRegion = cbggg_TextureRegion__init_($backgroundTexture);
+    $this.$bgRegion.$setRegion0(0, 0, 5000, 5000);
     $this.$image2 = cbgg_Texture__init_0(cbg_Gdx_files.$internal($rt_s(448)));
     $this.$enemySprite = cbggg_Sprite__init_0($this.$image2);
     $this.$enemySprite.$setOriginCenter();
@@ -21684,7 +21685,7 @@ igb_Main_render = $this => {
     cbgu_ScreenUtils_clear(0.15000000596046448, 0.15000000596046448, 0.20000000298023224, 1.0);
     $this.$batch.$setProjectionMatrix($this.$camera0.$combined);
     $this.$batch.$begin();
-    $this.$batch.$draw1($this.$background0, 0.0, 0.0, 5000.0, 5000.0);
+    $this.$batch.$draw2($this.$bgRegion, 0.0, 0.0, 5000.0, 5000.0);
     $this.$enemySprite.$draw4($this.$batch);
     $this.$shipSprite.$draw4($this.$batch);
     $this.$batch.$end();
@@ -22063,12 +22064,12 @@ function cbggg_TextureRegion() {
     a.$regionWidth = 0;
     a.$regionHeight = 0;
 }
-let cbggg_TextureRegion__init_ = $this => {
+let cbggg_TextureRegion__init_0 = $this => {
     jl_Object__init_($this);
 },
 cbggg_TextureRegion__init_2 = () => {
     let var_0 = new cbggg_TextureRegion();
-    cbggg_TextureRegion__init_(var_0);
+    cbggg_TextureRegion__init_0(var_0);
     return var_0;
 },
 cbggg_TextureRegion__init_1 = ($this, $texture) => {
@@ -22078,7 +22079,7 @@ cbggg_TextureRegion__init_1 = ($this, $texture) => {
     $this.$texture = $texture;
     $this.$setRegion0(0, 0, $texture.$getWidth0(), $texture.$getHeight0());
 },
-cbggg_TextureRegion__init_0 = var_0 => {
+cbggg_TextureRegion__init_ = var_0 => {
     let var_1 = new cbggg_TextureRegion();
     cbggg_TextureRegion__init_1(var_1, var_0);
     return var_1;
@@ -22173,7 +22174,7 @@ function cbgssu_Image() {
     a.$drawable = null;
 }
 let cbgssu_Image__init_1 = ($this, $texture) => {
-    cbgssu_Image__init_($this, cbgssu_TextureRegionDrawable__init_(cbggg_TextureRegion__init_0($texture)));
+    cbgssu_Image__init_($this, cbgssu_TextureRegionDrawable__init_(cbggg_TextureRegion__init_($texture)));
 },
 cbgssu_Image__init_2 = var_0 => {
     let var_1 = new cbgssu_Image();
@@ -28563,10 +28564,10 @@ cgxgbt_TeaPreloadApplicationListener_setupScene2d = $this => {
     $pixmap.$dispose();
     $borderDrawable = cgxgbt_TeaPreloadApplicationListener$BorderDrawable__init_0($whiteTexture);
     $borderDrawable.$setMinHeight(40.0);
-    $fillDrawable = cbgssu_TextureRegionDrawable__init_(cbggg_TextureRegion__init_0($whiteTexture));
+    $fillDrawable = cbgssu_TextureRegionDrawable__init_(cbggg_TextureRegion__init_($whiteTexture));
     $fillDrawable.$setMinHeight($borderDrawable.$getMinHeight() - $borderDrawable.$getTopHeight() - $borderDrawable.$getBottomHeight());
     $style = cbgssu_ProgressBar$ProgressBarStyle__init_0();
-    $style.$background1 = $borderDrawable;
+    $style.$background0 = $borderDrawable;
     $style.$knob = $fillDrawable;
     $style.$knobBefore = $fillDrawable;
     $this.$progressBar = cbgssu_ProgressBar__init_0(0.0, 1.0, 0.009999999776482582, 0, $style);
@@ -31021,7 +31022,7 @@ cbggg_Sprite__init_0 = var_0 => {
     return var_1;
 },
 cbggg_Sprite__init_ = ($this, $texture, $srcX, $srcY, $srcWidth, $srcHeight) => {
-    cbggg_TextureRegion__init_($this);
+    cbggg_TextureRegion__init_0($this);
     $this.$vertices2 = $rt_createFloatArray(20);
     $this.$color4 = cbgg_Color__init_0(1.0, 1.0, 1.0, 1.0);
     $this.$packedColor = cbgg_Color_WHITE_FLOAT_BITS;
@@ -33236,7 +33237,7 @@ jl_Long, 0, jl_Number, [jl_Comparable], 0, 3, 0, jl_Long_$callClinit, 0,
 ju_Random, 0, jl_Object, [jur_RandomGenerator, ji_Serializable], 0, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(ju_Random__init_), "$nextInt", $rt_wrapFunction0(ju_Random_nextInt), "$nextLong", $rt_wrapFunction0(ju_Random_nextLong), "$nextDouble", $rt_wrapFunction0(ju_Random_nextDouble)],
 cbgm_RandomXS128, 0, ju_Random, [], 0, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(cbgm_RandomXS128__init_), "$setSeed", $rt_wrapFunction1(cbgm_RandomXS128_setSeed), "$setState", $rt_wrapFunction2(cbgm_RandomXS128_setState)],
 jur_SequenceSet$IntHash, 0, jl_Object, [], 0, 0, 0, 0, ["$_init_3", $rt_wrapFunction1(jur_SequenceSet$IntHash__init_), "$put1", $rt_wrapFunction2(jur_SequenceSet$IntHash_put), "$get2", $rt_wrapFunction1(jur_SequenceSet$IntHash_get)],
-cbggg_TextureRegion, 0, jl_Object, [], 0, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(cbggg_TextureRegion__init_), "$_init_117", $rt_wrapFunction1(cbggg_TextureRegion__init_1), "$setRegion0", $rt_wrapFunction4(cbggg_TextureRegion_setRegion0), "$setRegion1", $rt_wrapFunction4(cbggg_TextureRegion_setRegion), "$getRegionWidth", $rt_wrapFunction0(cbggg_TextureRegion_getRegionWidth), "$getRegionHeight", $rt_wrapFunction0(cbggg_TextureRegion_getRegionHeight)],
+cbggg_TextureRegion, 0, jl_Object, [], 0, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(cbggg_TextureRegion__init_0), "$_init_117", $rt_wrapFunction1(cbggg_TextureRegion__init_1), "$setRegion0", $rt_wrapFunction4(cbggg_TextureRegion_setRegion0), "$setRegion1", $rt_wrapFunction4(cbggg_TextureRegion_setRegion), "$getRegionWidth", $rt_wrapFunction0(cbggg_TextureRegion_getRegionWidth), "$getRegionHeight", $rt_wrapFunction0(cbggg_TextureRegion_getRegionHeight)],
 jur_AbstractCharClass$LazyNonDigit, 0, jur_AbstractCharClass$LazyDigit, [], 0, 0, 0, 0, ["$_init_0", $rt_wrapFunction0(jur_AbstractCharClass$LazyNonDigit__init_), "$computeValue", $rt_wrapFunction0(jur_AbstractCharClass$LazyNonDigit_computeValue)],
 cbguv_ScreenViewport, 0, cbguv_Viewport, [], 0, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(cbguv_ScreenViewport__init_0), "$_init_121", $rt_wrapFunction1(cbguv_ScreenViewport__init_), "$update2", $rt_wrapFunction3(cbguv_ScreenViewport_update)],
 cbgssu_Image, "Image", 16, cbgssu_Widget, [], 0, 3, [0,0,0], 0, ["$_init_117", $rt_wrapFunction1(cbgssu_Image__init_1), "$_init_122", $rt_wrapFunction1(cbgssu_Image__init_), "$_init_124", $rt_wrapFunction3(cbgssu_Image__init_0), "$layout", $rt_wrapFunction0(cbgssu_Image_layout), "$draw", $rt_wrapFunction2(cbgssu_Image_draw), "$setDrawable", $rt_wrapFunction1(cbgssu_Image_setDrawable), "$setScaling", $rt_wrapFunction1(cbgssu_Image_setScaling), "$getMinWidth", $rt_wrapFunction0(cbgssu_Image_getMinWidth), "$getMinHeight",
