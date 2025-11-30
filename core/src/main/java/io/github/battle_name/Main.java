@@ -55,11 +55,10 @@ float enemyY = 200;
     public void create() {
         batch = new SpriteBatch();
         
-        background = new Texture("water_tile.png");
+        background = new Texture(Gdx.files.internal("water_tile.png"));
 background.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
-bgSprite = new Sprite(background);
-bgSprite.setSize(WORLD_WIDTH, WORLD_HEIGHT); 
+
         image2 = new Texture(Gdx.files.internal("ship.png"));
         enemySprite = new Sprite(image2);    
         enemySprite.setOriginCenter();
@@ -146,7 +145,9 @@ camera.update();
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
         batch.setProjectionMatrix(camera.combined); // must be AFTER camera.update
         batch.begin();
-        bgSprite.draw(batch);
+        batch.draw(background,
+           0, 0, // bottom-left of the world
+           WORLD_WIDTH, WORLD_HEIGHT);
         enemySprite.draw(batch);
         shipSprite.draw(batch);
         
