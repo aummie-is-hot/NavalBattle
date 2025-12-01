@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -22,18 +23,45 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-
+ import java.util.ArrayList;
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
+    class CannonBall {
+    float x, y;
+    float angle;   // degrees
+    float speed = 900;
+    Texture tex;
+
+    public CannonBall(float x, float y, float angle, Texture tex) {
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+        this.tex = tex;
+    }
+
+    public void update(float dt) {
+        float rad = (float)Math.toRadians(angle);
+        x += Math.cos(rad) * speed * dt;
+        y += Math.sin(rad) * speed * dt;
+    }
+
+    public void draw(SpriteBatch batch) {
+        batch.draw(tex, x - tex.getWidth()/2f, y - tex.getHeight()/2f);
+    }
+}
+ArrayList<CannonBall> cannonballs = new ArrayList<>();
     private SpriteBatch batch;
     private Texture image;
      private Texture image2;
     private Sprite shipSprite;
     private Sprite bgSprite;
+    int bulletsR;
+    int bulletsL;
     private Label label;
     private Stage stage;
      private Sprite enemySprite;
      private Texture background;
+      private Texture cannonball;
       public static final float WORLD_WIDTH = 5000;
       public static final float WORLD_HEIGHT =5000;
     private TextureRegion bgRegion;
@@ -43,6 +71,8 @@ public class Main extends ApplicationAdapter {
     private Animation<TextureRegion> animation;
     private float stateTime;
     ParticleEffect wakeEffect;
+    ArrayList<Integer> bulletsLeft = new ArrayList();
+    ArrayList<Integer> bulletsRight = new ArrayList();
     float playerRotation = 0;
     float enemyX = 1100;
 float enemyY = 200;
@@ -51,12 +81,16 @@ float enemyY = 200;
     float x = 1000;
     float y = 100;
     float speed = 300;
+
+boolean shoot = true;
+
+
     @Override
     public void create() {
         batch = new SpriteBatch();
         
        background = new Texture("water_tile.png");
-
+       cannonball = new Texture("cannon.png");
 
 
 
@@ -94,23 +128,46 @@ float enemyY = 200;
     @Override
     public void render() {
        
-        // make start screen and when you get hit restart screen with an if statement using a varibale
-        //  to decide if the game is
-        //  running like if( running = 1) 
-        // put all the code in the normal game, if (running=0) restart the timer and show the restart screen
-        // make it have hearts so when the enemy doesnt die and hit the bottom you lose a heart as its your base. 
-        // And add a boost meter that when pressing shift allows you to move alot faster but its limited 
-        // and the boost regens a bit slow like 1 every second
+        //make start screen and when you get hit restart screen with an if statement using a varibale
+        //to decide if the game is
+        //running like if( running = 1) 
+        //put all the code in the normal game, if (running=0) restart the timer and show the restart screen
+        //make it have hearts so when the enemy doesnt die and hit the bottom you lose a heart as its your base. 
+        //And add a boost meter that when pressing shift allows you to move alot faster but its limited 
+        //and the boost regens a bit slow like 1 every second
        
         float dt = Gdx.graphics.getDeltaTime();
+        bulletsL = bulletsLeft.size();
+        bulletsR = bulletsRight.size();
         
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)){
+             float rad = (float)Math.toRadians(playerRotation + 90); // left side
+    float spawnX = x + MathUtils.cos(rad) * 60;
+    float spawnY = y + MathUtils.sin(rad) * 60;
+   
+    cannonballs.add(new CannonBall(spawnX, spawnY, playerRotation + 90, cannonball));
+           
+
+        }  
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)){
+           float rad = (float)Math.toRadians(playerRotation - 90); // right side
+    float spawnX = x + MathUtils.cos(rad) * 60;
+    float spawnY = y + MathUtils.sin(rad) * 60;
+
+    cannonballs.add(new CannonBall(spawnX, spawnY, playerRotation - 90, cannonball));
+
+        }  
+    
         if (Gdx.input.isKeyPressed(Input.Keys.A)){
            playerRotation += 150 * dt;
         }  
         if (Gdx.input.isKeyPressed(Input.Keys.D)){
            playerRotation -= 150 * dt;
         } 
-        
+        for (int i = 0; i < cannonballs.size(); i++) {
+    cannonballs.get(i).update(dt);
+}
         float angleRad = (float)Math.toRadians(playerRotation);
 float dirX = MathUtils.cos(angleRad);
 float dirY = MathUtils.sin(angleRad);
@@ -160,7 +217,12 @@ camera.update();
             batch.draw(background, x, y);
         }
     }
+
+    
         enemySprite.draw(batch);
+        for (CannonBall b : cannonballs) {
+    b.draw(batch);
+}
         shipSprite.draw(batch);
         
         batch.end();
@@ -170,7 +232,10 @@ camera.update();
         stage.draw();
         
         Rectangle player = new Rectangle(x, y, image.getWidth(), image.getHeight());
-       
+        Rectangle enemy = new Rectangle(x,y,cannonball.getWidth(), cannonball.getHeight());
+       if (player.overlaps(enemy)){
+        
+       }
        
        
         
