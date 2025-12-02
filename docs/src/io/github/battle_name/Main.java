@@ -89,11 +89,11 @@ public class Main extends ApplicationAdapter {
     float enemyX = 1100;
     float enemyY = 1000;
     float rotation = 0;
-    int enemydead = 0;
+    int enemyhealth = 5;
     float x = 1000;
     float y = 100;
     float speed = 300;
-
+    boolean enemyhit = false;
     boolean shoot = true;
 
     @Override
@@ -130,17 +130,7 @@ public class Main extends ApplicationAdapter {
     @Override
     public void render() {
 
-        // make start screen and when you get hit restart screen with an if statement
-        // using a varibale
-        // to decide if the game is
-        // running like if( running = 1)
-        // put all the code in the normal game, if (running=0) restart the timer and
-        // show the restart screen
-        // make it have hearts so when the enemy doesnt die and hit the bottom you lose
-        // a heart as its your base.
-        // And add a boost meter that when pressing shift allows you to move alot faster
-        // but its limited
-        // and the boost regens a bit slow like 1 every second
+        
 
         float dt = Gdx.graphics.getDeltaTime();
         bulletsL = bulletsLeft.size();
@@ -222,8 +212,10 @@ public class Main extends ApplicationAdapter {
                 batch.draw(background, x, y);
             }
         }
+        if (enemyhealth>0){
 
         enemySprite.draw(batch);
+        }
         for (CannonBall b : cannonballs) {
             b.draw(batch);
           //  System.out.println(b.rect);
@@ -241,7 +233,13 @@ public class Main extends ApplicationAdapter {
         for (CannonBall b : cannonballs) {
             if (enemySprite.getBoundingRectangle().overlaps(b.rect)) {
                 System.out.println("ello");
+
+                enemyhealth=enemyhealth-1;
+                cannonballs.remove(b);
+                
+                break;
             }
+           
         }
 
     }

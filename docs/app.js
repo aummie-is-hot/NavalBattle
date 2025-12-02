@@ -9714,6 +9714,11 @@ jl_Object$monitorEnterWait$lambda$_6_0_run = var$0 => {
     jl_Object_lambda$monitorEnterWait$0(var$0.$_09, var$0.$_14, var$0.$_23, var$0.$_31);
 },
 ju_Objects = $rt_classWithoutFields(),
+ju_Objects_equals = ($a, $b) => {
+    if ($a === $b)
+        return 1;
+    return $a !== null ? $a.$equals($b) : $b !== null ? 0 : 1;
+},
 ju_Objects_requireNonNull = $obj => {
     return ju_Objects_requireNonNull0($obj, $rt_s(64));
 },
@@ -14966,6 +14971,19 @@ let ju_AbstractList__init_ = $this => {
 ju_AbstractList_iterator = $this => {
     return ju_AbstractList$1__init_0($this);
 },
+ju_AbstractList_indexOf = ($this, $o) => {
+    let $sz, $i;
+    $sz = $this.$size();
+    $i = 0;
+    while (true) {
+        if ($i >= $sz)
+            return (-1);
+        if (ju_Objects_equals($o, $this.$get0($i)))
+            break;
+        $i = $i + 1 | 0;
+    }
+    return $i;
+},
 ju_RandomAccess = $rt_classWithoutFields(0);
 function ju_ArrayList() {
     let a = this; ju_AbstractList.call(a);
@@ -15045,6 +15063,14 @@ ju_ArrayList_remove = ($this, $i) => {
     $this.$array1.data[$this.$size2] = null;
     $this.$modCount = $this.$modCount + 1 | 0;
     return $old;
+},
+ju_ArrayList_remove0 = ($this, $o) => {
+    let $index;
+    $index = $this.$indexOf4($o);
+    if ($index < 0)
+        return 0;
+    $this.$remove1($index);
+    return 1;
 },
 ju_ArrayList_checkIndex = ($this, $index) => {
     if ($index >= 0 && $index < $this.$size2)
@@ -21668,10 +21694,11 @@ function igb_Main() {
     a.$enemyX = 0.0;
     a.$enemyY = 0.0;
     a.$rotation1 = 0.0;
-    a.$enemydead = 0;
+    a.$enemyhealth = 0;
     a.$x3 = 0.0;
     a.$y3 = 0.0;
     a.$speed = 0.0;
+    a.$enemyhit = 0;
     a.$shoot = 0;
 }
 let igb_Main__init_ = $this => {
@@ -21683,10 +21710,11 @@ let igb_Main__init_ = $this => {
     $this.$enemyX = 1100.0;
     $this.$enemyY = 1000.0;
     $this.$rotation1 = 0.0;
-    $this.$enemydead = 0;
+    $this.$enemyhealth = 5;
     $this.$x3 = 1000.0;
     $this.$y3 = 100.0;
     $this.$speed = 300.0;
+    $this.$enemyhit = 0;
     $this.$shoot = 1;
 },
 igb_Main__init_0 = () => {
@@ -21784,7 +21812,8 @@ igb_Main_render = $this => {
         }
         $x = $x + $tileW | 0;
     }
-    $this.$enemySprite.$draw5($this.$batch);
+    if ($this.$enemyhealth > 0)
+        $this.$enemySprite.$draw5($this.$batch);
     var$19 = $this.$cannonballs.$iterator0();
     while (var$19.$hasNext()) {
         $b = var$19.$next();
@@ -21795,10 +21824,17 @@ igb_Main_render = $this => {
     $this.$stage2.$act0($dt);
     $this.$stage2.$draw7();
     var$19 = $this.$cannonballs.$iterator0();
-    while (var$19.$hasNext()) {
-        $b = var$19.$next();
-        if (($this.$enemySprite.$getBoundingRectangle()).$overlaps($b.$rect2))
-            (jl_System_out()).$println($rt_s(450));
+    a: {
+        while (true) {
+            if (!var$19.$hasNext())
+                break a;
+            $b = var$19.$next();
+            if (($this.$enemySprite.$getBoundingRectangle()).$overlaps($b.$rect2))
+                break;
+        }
+        (jl_System_out()).$println($rt_s(450));
+        $this.$enemyhealth = $this.$enemyhealth - 1 | 0;
+        $this.$cannonballs.$remove4($b);
     }
 },
 igb_Main_dispose = $this => {
@@ -25718,7 +25754,7 @@ cgxgbt_TeaInput_handleMouseEvents = ($this, $e) => {
             $mouseEvent = $e;
             if (!$this.$touched.data[0])
                 return;
-            $this.$pressedButtons.$remove4(cgxgbtu_KeyCodes_getButton($mouseEvent.button));
+            $this.$pressedButtons.$remove5(cgxgbtu_KeyCodes_getButton($mouseEvent.button));
             var$9 = $this.$touched;
             var$9.data[0] = $this.$pressedButtons.$size3 <= 0 ? 0 : 1;
             if (!$this.$isCursorCatched()) {
@@ -32637,7 +32673,7 @@ cgxgbta_AssetLoadImpl$6__init_0 = (var_0, var_1, var_2, var_3) => {
 },
 cgxgbta_AssetLoadImpl$6_onSuccess = ($this, $url, $result) => {
     let $data, $byteArray, $output, $ex, var$7, var$8, var$9, var$10, $$je;
-    $this.$this$07.$assetDownloading.$remove5($this.$val$assetPath);
+    $this.$this$07.$assetDownloading.$remove4($this.$val$assetPath);
     $data = cgxgbta_TeaBlob_getData($result);
     $byteArray = cgxgbtdt_TypedArrays_toByteArray($data);
     $output = $this.$val$fileHandle.$write2(0, 4096);
@@ -32716,7 +32752,7 @@ cgxgbta_AssetLoadImpl$5__init_0 = (var_0, var_1, var_2) => {
 },
 cgxgbta_AssetLoadImpl$5_onSuccess = ($this, $url, $result) => {
     let $data, $byteArray, $assets, $lines, var$7, var$8, var$9, var$10, $line, $tokens, var$13, var$14, var$15, $fileTypeStr, $assetTypeStr, $assetUrl, $shouldOverwriteLocalData, $fileType, $assetType;
-    $this.$this$04.$assetDownloading.$remove5($this.$val$assetFileUrl);
+    $this.$this$04.$assetDownloading.$remove4($this.$val$assetFileUrl);
     $data = cgxgbta_TeaBlob_getData($result);
     $byteArray = cgxgbtdt_TypedArrays_toByteArray($data);
     $assets = jl_String__init_8($byteArray);
@@ -32931,7 +32967,7 @@ jur_CISequenceSet, "CISequenceSet", 24, jur_LeafSet, [], 0, 0, [0,0,0], 0, ["$_i
 jl_CharSequence, 0, jl_Object, [], 3, 3, 0, 0, 0,
 ju_Map, 0, jl_Object, [], 3, 3, 0, 0, 0,
 ju_SequencedMap, 0, jl_Object, [ju_Map], 3, 3, 0, 0, 0,
-cbgu_IntSet, 0, jl_Object, [], 0, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(cbgu_IntSet__init_0), "$_init_28", $rt_wrapFunction2(cbgu_IntSet__init_), "$place", $rt_wrapFunction1(cbgu_IntSet_place), "$add6", $rt_wrapFunction1(cbgu_IntSet_add), "$remove4", $rt_wrapFunction1(cbgu_IntSet_remove), "$contains", $rt_wrapFunction1(cbgu_IntSet_contains)],
+cbgu_IntSet, 0, jl_Object, [], 0, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(cbgu_IntSet__init_0), "$_init_28", $rt_wrapFunction2(cbgu_IntSet__init_), "$place", $rt_wrapFunction1(cbgu_IntSet_place), "$add6", $rt_wrapFunction1(cbgu_IntSet_add), "$remove5", $rt_wrapFunction1(cbgu_IntSet_remove), "$contains", $rt_wrapFunction1(cbgu_IntSet_contains)],
 ju_MissingResourceException, "MissingResourceException", 23, jl_RuntimeException, [], 0, 3, [0,0,0], 0, ["$_init_38", $rt_wrapFunction3(ju_MissingResourceException__init_)],
 jl_IndexOutOfBoundsException, "IndexOutOfBoundsException", 27, jl_RuntimeException, [], 0, 3, [0,0,0], 0, ["$_init_0", $rt_wrapFunction0(jl_IndexOutOfBoundsException__init_2), "$_init_", $rt_wrapFunction1(jl_IndexOutOfBoundsException__init_0)],
 jl_StringIndexOutOfBoundsException, "StringIndexOutOfBoundsException", 27, jl_IndexOutOfBoundsException, [], 0, 3, [0,0,0], 0, ["$_init_0", $rt_wrapFunction0(jl_StringIndexOutOfBoundsException__init_0)],
@@ -33202,9 +33238,10 @@ jur_RelCompositeGroupQuantifierSet, "RelCompositeGroupQuantifierSet", 24, jur_Co
 cbgm_MathUtils$Sin, 0, jl_Object, [], 0, 0, 0, cbgm_MathUtils$Sin_$callClinit, 0,
 cbggg_Batch, 0, jl_Object, [cbgu_Disposable], 3, 3, 0, 0, 0,
 ju_List, 0, jl_Object, [ju_SequencedCollection], 3, 3, 0, 0, 0]);
-$rt_metadata([ju_AbstractList, 0, ju_AbstractCollection, [ju_List], 1, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(ju_AbstractList__init_), "$iterator0", $rt_wrapFunction0(ju_AbstractList_iterator)],
+$rt_metadata([ju_AbstractList, 0, ju_AbstractCollection, [ju_List], 1, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(ju_AbstractList__init_), "$iterator0", $rt_wrapFunction0(ju_AbstractList_iterator), "$indexOf4", $rt_wrapFunction1(ju_AbstractList_indexOf)],
 ju_RandomAccess, 0, jl_Object, [], 3, 3, 0, 0, 0,
-ju_ArrayList, 0, ju_AbstractList, [jl_Cloneable, ji_Serializable, ju_RandomAccess], 0, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(ju_ArrayList__init_1), "$_init_3", $rt_wrapFunction1(ju_ArrayList__init_0), "$ensureCapacity", $rt_wrapFunction1(ju_ArrayList_ensureCapacity), "$get0", $rt_wrapFunction1(ju_ArrayList_get), "$size", $rt_wrapFunction0(ju_ArrayList_size), "$add", $rt_wrapFunction1(ju_ArrayList_add0), "$add3", $rt_wrapFunction2(ju_ArrayList_add), "$remove1", $rt_wrapFunction1(ju_ArrayList_remove)],
+ju_ArrayList, 0, ju_AbstractList, [jl_Cloneable, ji_Serializable, ju_RandomAccess], 0, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(ju_ArrayList__init_1), "$_init_3", $rt_wrapFunction1(ju_ArrayList__init_0), "$ensureCapacity", $rt_wrapFunction1(ju_ArrayList_ensureCapacity), "$get0", $rt_wrapFunction1(ju_ArrayList_get), "$size", $rt_wrapFunction0(ju_ArrayList_size), "$add", $rt_wrapFunction1(ju_ArrayList_add0), "$add3", $rt_wrapFunction2(ju_ArrayList_add), "$remove1", $rt_wrapFunction1(ju_ArrayList_remove), "$remove4",
+$rt_wrapFunction1(ju_ArrayList_remove0)],
 cgxgbt_TeaApplication$4, 0, jl_Object, [jl_Runnable], 0, 0, 0, 0, ["$_init_50", $rt_wrapFunction1(cgxgbt_TeaApplication$4__init_), "$run", $rt_wrapFunction0(cgxgbt_TeaApplication$4_run)],
 otrf_VirtualFileSystem, 0, jl_Object, [], 3, 3, 0, 0, 0,
 cgxgbt_TeaApplication$5, 0, jl_Object, [jl_Runnable], 0, 0, 0, 0, ["$_init_139", $rt_wrapFunction2(cgxgbt_TeaApplication$5__init_), "$run", $rt_wrapFunction0(cgxgbt_TeaApplication$5_run)],
@@ -33497,7 +33534,7 @@ otji_JSWrapper, "JSWrapper", 31, jl_Object, [], 4, 3, [0,0,0], 0, ["$equals", $r
 cbgm_Frustum, 0, jl_Object, [], 0, 3, 0, cbgm_Frustum_$callClinit, ["$_init_0", $rt_wrapFunction0(cbgm_Frustum__init_), "$update1", $rt_wrapFunction1(cbgm_Frustum_update)],
 cbgmc_Ray, 0, jl_Object, [ji_Serializable], 0, 3, 0, cbgmc_Ray_$callClinit, ["$_init_75", $rt_wrapFunction2(cbgmc_Ray__init_)],
 cbgss_Touchable, 0, jl_Enum, [], 12, 3, 0, cbgss_Touchable_$callClinit, 0,
-ju_HashSet, 0, ju_AbstractSet, [jl_Cloneable, ji_Serializable], 0, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(ju_HashSet__init_0), "$_init_147", $rt_wrapFunction1(ju_HashSet__init_), "$add", $rt_wrapFunction1(ju_HashSet_add), "$remove5", $rt_wrapFunction1(ju_HashSet_remove), "$size", $rt_wrapFunction0(ju_HashSet_size)],
+ju_HashSet, 0, ju_AbstractSet, [jl_Cloneable, ji_Serializable], 0, 3, 0, 0, ["$_init_0", $rt_wrapFunction0(ju_HashSet__init_0), "$_init_147", $rt_wrapFunction1(ju_HashSet__init_), "$add", $rt_wrapFunction1(ju_HashSet_add), "$remove4", $rt_wrapFunction1(ju_HashSet_remove), "$size", $rt_wrapFunction0(ju_HashSet_size)],
 cgxgbt_TeaInput, "TeaInput", 5, cbg_AbstractInput, [otjde_EventListener], 0, 3, [0,0,0], 0, ["$_init_137", $rt_wrapFunction2(cgxgbt_TeaInput__init_), "$handleEvent1", $rt_wrapFunction1(cgxgbt_TeaInput_handleEvent), "$reset2", $rt_wrapFunction0(cgxgbt_TeaInput_reset), "$setDelta", $rt_wrapFunction3(cgxgbt_TeaInput_setDelta), "$getRelativeX", $rt_wrapFunction2(cgxgbt_TeaInput_getRelativeX1), "$getRelativeY", $rt_wrapFunction2(cgxgbt_TeaInput_getRelativeY0), "$getRelativeX0", $rt_wrapFunction2(cgxgbt_TeaInput_getRelativeX),
 "$getRelativeY0", $rt_wrapFunction2(cgxgbt_TeaInput_getRelativeY), "$getX0", $rt_wrapFunction0(cgxgbt_TeaInput_getX), "$getY0", $rt_wrapFunction0(cgxgbt_TeaInput_getY), "$setInputProcessor", $rt_wrapFunction1(cgxgbt_TeaInput_setInputProcessor), "$isCursorCatched", $rt_wrapFunction0(cgxgbt_TeaInput_isCursorCatched)],
 jnc_BufferUnderflowException, "BufferUnderflowException", 26, jl_RuntimeException, [], 0, 3, [0,0,0], 0, ["$_init_0", $rt_wrapFunction0(jnc_BufferUnderflowException__init_)],
