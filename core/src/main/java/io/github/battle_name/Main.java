@@ -105,6 +105,7 @@ public class Main extends ApplicationAdapter {
 
         image2 = new Texture(Gdx.files.internal("ship.png"));
         enemySprite = new Sprite(image2);
+        
         enemySprite.setOriginCenter();
 
         image = new Texture(Gdx.files.internal("ship.png"));
@@ -231,12 +232,13 @@ public class Main extends ApplicationAdapter {
        
         
         for (CannonBall b : cannonballs) {
-            if (enemySprite.getBoundingRectangle().overlaps(b.rect)) {
+            if (enemySprite.getBoundingRectangle().overlaps(b.rect) && enemyhealth >0){
                 System.out.println("ello");
 
                 enemyhealth=enemyhealth-1;
                 cannonballs.remove(b);
-                
+
+              
                 break;
             }
            

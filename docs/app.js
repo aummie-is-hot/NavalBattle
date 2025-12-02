@@ -21829,7 +21829,7 @@ igb_Main_render = $this => {
             if (!var$19.$hasNext())
                 break a;
             $b = var$19.$next();
-            if (($this.$enemySprite.$getBoundingRectangle()).$overlaps($b.$rect2))
+            if (($this.$enemySprite.$getBoundingRectangle()).$overlaps($b.$rect2) && $this.$enemyhealth > 0)
                 break;
         }
         (jl_System_out()).$println($rt_s(450));
