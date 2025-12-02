@@ -23,47 +23,59 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
- import java.util.ArrayList;
-/** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
+import java.util.ArrayList;
+
+/**
+ * {@link com.badlogic.gdx.ApplicationListener} implementation shared by all
+ * platforms.
+ */
 public class Main extends ApplicationAdapter {
+    // Rectangle cannonballhit;
     class CannonBall {
-    float x, y;
-    float angle;   // degrees
-    float speed = 900;
-    Texture tex;
+        float x, y;
+        float angle; // degrees
+        float speed = 900;
+        Texture tex;
+        Rectangle rect;
 
-    public CannonBall(float x, float y, float angle, Texture tex) {
-        this.x = x;
-        this.y = y;
-        this.angle = angle;
-        this.tex = tex;
+        public CannonBall(float x, float y, float angle, Texture tex) {
+            this.x = x;
+            this.y = y;
+            this.angle = angle;
+            this.tex = tex;
+            this.rect = new Rectangle(x, y, tex.getWidth(), tex.getHeight());
+        }
+
+        public void update(float dt) {
+            float rad = (float) Math.toRadians(angle);
+            this.x += Math.cos(rad) * speed * dt;
+            this.y += Math.sin(rad) * speed * dt;
+
+        }
+
+        public void draw(SpriteBatch batch) {
+            batch.draw(tex, this.x - tex.getWidth() / 2f, this.y - tex.getHeight() / 2f);
+            this.rect.x = this.x;
+            this.rect.y= this.y;
+            // cannonballhit = new Rectangle(x,y,tex.getWidth(), tex.getHeight());
+        }
     }
 
-    public void update(float dt) {
-        float rad = (float)Math.toRadians(angle);
-        x += Math.cos(rad) * speed * dt;
-        y += Math.sin(rad) * speed * dt;
-    }
-
-    public void draw(SpriteBatch batch) {
-        batch.draw(tex, x - tex.getWidth()/2f, y - tex.getHeight()/2f);
-    }
-}
-ArrayList<CannonBall> cannonballs = new ArrayList<>();
+    ArrayList<CannonBall> cannonballs = new ArrayList<>();
     private SpriteBatch batch;
     private Texture image;
-     private Texture image2;
+    private Texture image2;
     private Sprite shipSprite;
     private Sprite bgSprite;
     int bulletsR;
     int bulletsL;
     private Label label;
     private Stage stage;
-     private Sprite enemySprite;
-     private Texture background;
-      private Texture cannonball;
-      public static final float WORLD_WIDTH = 5000;
-      public static final float WORLD_HEIGHT =5000;
+    private Sprite enemySprite;
+    private Texture background;
+    private Texture cannonball;
+    public static final float WORLD_WIDTH = 5000;
+    public static final float WORLD_HEIGHT = 5000;
     private TextureRegion bgRegion;
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -75,190 +87,168 @@ ArrayList<CannonBall> cannonballs = new ArrayList<>();
     ArrayList<Integer> bulletsRight = new ArrayList();
     float playerRotation = 0;
     float enemyX = 1100;
-float enemyY = 200;
+    float enemyY = 1000;
     float rotation = 0;
     int enemydead = 0;
     float x = 1000;
     float y = 100;
     float speed = 300;
 
-boolean shoot = true;
-
+    boolean shoot = true;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
-        
-       background = new Texture("water_tile.png");
-       cannonball = new Texture("cannon.png");
 
-
-
-
+        background = new Texture("water_tile.png");
+        cannonball = new Texture("cannon.png");
 
         image2 = new Texture(Gdx.files.internal("ship.png"));
-        enemySprite = new Sprite(image2);    
+        enemySprite = new Sprite(image2);
         enemySprite.setOriginCenter();
-        
-        
-        image = new Texture(Gdx.files.internal("ship.png"));
-    shipSprite  = new Sprite(image);
 
-    // set origin to center so rotation is around the ship center
-    shipSprite.setOriginCenter();
+        image = new Texture(Gdx.files.internal("ship.png"));
+        shipSprite = new Sprite(image);
+
+        // set origin to center so rotation is around the ship center
+        shipSprite.setOriginCenter();
         camera = new OrthographicCamera();
         viewport = new FitViewport(1700, 864, camera); // visible screen
         stage = new Stage(viewport);
 
         // Start camera centered on player
-        camera.position.set(x + image.getWidth()/2f, y + image.getHeight()/2f, 0);
+        camera.position.set(x + image.getWidth() / 2f, y + image.getHeight() / 2f, 0);
         camera.update();
-        
-    
-
 
     }
+
     @Override
-    public void resize(int width, int height){
+    public void resize(int width, int height) {
         viewport.update(width, height, true);
     }
 
-
-
     @Override
     public void render() {
-       
-        //make start screen and when you get hit restart screen with an if statement using a varibale
-        //to decide if the game is
-        //running like if( running = 1) 
-        //put all the code in the normal game, if (running=0) restart the timer and show the restart screen
-        //make it have hearts so when the enemy doesnt die and hit the bottom you lose a heart as its your base. 
-        //And add a boost meter that when pressing shift allows you to move alot faster but its limited 
-        //and the boost regens a bit slow like 1 every second
-       
+
+        // make start screen and when you get hit restart screen with an if statement
+        // using a varibale
+        // to decide if the game is
+        // running like if( running = 1)
+        // put all the code in the normal game, if (running=0) restart the timer and
+        // show the restart screen
+        // make it have hearts so when the enemy doesnt die and hit the bottom you lose
+        // a heart as its your base.
+        // And add a boost meter that when pressing shift allows you to move alot faster
+        // but its limited
+        // and the boost regens a bit slow like 1 every second
+
         float dt = Gdx.graphics.getDeltaTime();
         bulletsL = bulletsLeft.size();
         bulletsR = bulletsRight.size();
-        
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)){
-             float rad = (float)Math.toRadians(playerRotation + 90); // left side
-    float spawnX = x + MathUtils.cos(rad) * 60;
-    float spawnY = y + MathUtils.sin(rad) * 60;
-   
-    cannonballs.add(new CannonBall(spawnX, spawnY, playerRotation + 90, cannonball));
-           
 
-        }  
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+            float rad = (float) Math.toRadians(playerRotation + 90); // left side
+            float spawnX = x + MathUtils.cos(rad) * 60;
+            float spawnY = y + MathUtils.sin(rad) * 60;
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E)){
-           float rad = (float)Math.toRadians(playerRotation - 90); // right side
-    float spawnX = x + MathUtils.cos(rad) * 60;
-    float spawnY = y + MathUtils.sin(rad) * 60;
+            cannonballs.add(new CannonBall(spawnX, spawnY, playerRotation + 90, cannonball));
 
-    cannonballs.add(new CannonBall(spawnX, spawnY, playerRotation - 90, cannonball));
+        }
 
-        }  
-    
-        if (Gdx.input.isKeyPressed(Input.Keys.A)){
-           playerRotation += 150 * dt;
-        }  
-        if (Gdx.input.isKeyPressed(Input.Keys.D)){
-           playerRotation -= 150 * dt;
-        } 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            float rad = (float) Math.toRadians(playerRotation - 90); // right side
+            float spawnX = x + MathUtils.cos(rad) * 60;
+            float spawnY = y + MathUtils.sin(rad) * 60;
+
+            cannonballs.add(new CannonBall(spawnX, spawnY, playerRotation - 90, cannonball));
+
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+            playerRotation += 150 * dt;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+            playerRotation -= 150 * dt;
+        }
         for (int i = 0; i < cannonballs.size(); i++) {
-    cannonballs.get(i).update(dt);
-}
-        float angleRad = (float)Math.toRadians(playerRotation);
-float dirX = MathUtils.cos(angleRad);
-float dirY = MathUtils.sin(angleRad);
+            cannonballs.get(i).update(dt);
+        }
+        float angleRad = (float) Math.toRadians(playerRotation);
+        float dirX = MathUtils.cos(angleRad);
+        float dirY = MathUtils.sin(angleRad);
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-    x += dirX * speed * dt;
-    y += dirY * speed * dt;
-}
-if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-    x -= dirX * speed * dt;
-    y -= dirY * speed * dt;
-}
+            x += dirX * speed * dt;
+            y += dirY * speed * dt;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+            x -= dirX * speed * dt;
+            y -= dirY * speed * dt;
+        }
         shipSprite.setRotation(playerRotation);
         shipSprite.setPosition(x - shipSprite.getOriginX(), y - shipSprite.getOriginY());
         enemySprite.setRotation(0); // For now static
         enemySprite.setPosition(enemyX - enemySprite.getOriginX(), enemyY - enemySprite.getOriginY());
-  // Clamp player normally
-x = MathUtils.clamp(x, 0, WORLD_WIDTH - image.getWidth());
-y = MathUtils.clamp(y, 0, WORLD_HEIGHT - image.getHeight());
+        // Clamp player normally
+        x = MathUtils.clamp(x, 0, WORLD_WIDTH - image.getWidth());
+        y = MathUtils.clamp(y, 0, WORLD_HEIGHT - image.getHeight());
 
-// Camera follows player
-float camX = x + image.getWidth()/2f;
-float camY = y + image.getHeight()/2f;
+        // Camera follows player
+        float camX = x + image.getWidth() / 2f;
+        float camY = y + image.getHeight() / 2f;
 
-// Clamp camera so it never goes outside world bounds
-float halfViewportWidth = viewport.getWorldWidth()/2f;
-float halfViewportHeight = viewport.getWorldHeight()/2f;
+        // Clamp camera so it never goes outside world bounds
+        float halfViewportWidth = viewport.getWorldWidth() / 2f;
+        float halfViewportHeight = viewport.getWorldHeight() / 2f;
 
-camX = MathUtils.clamp(camX, halfViewportWidth, WORLD_WIDTH - halfViewportWidth);
-camY = MathUtils.clamp(camY, halfViewportHeight, WORLD_HEIGHT - halfViewportHeight);
+        camX = MathUtils.clamp(camX, halfViewportWidth, WORLD_WIDTH - halfViewportWidth);
+        camY = MathUtils.clamp(camY, halfViewportHeight, WORLD_HEIGHT - halfViewportHeight);
 
-camera.position.set(camX, camY, 0);
-camera.update();
+        camera.position.set(camX, camY, 0);
+        camera.update();
 
         // --- Draw ---
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
         batch.setProjectionMatrix(camera.combined); // must be AFTER camera.update
         batch.begin();
-         int tileW = background.getWidth();
-    int tileH = background.getHeight();
+        int tileW = background.getWidth();
+        int tileH = background.getHeight();
 
-    // Draw enough tiles to cover the camera view
-    for (int x = (int)(camera.position.x - camera.viewportWidth/2) / tileW * tileW;
-             x < camera.position.x + camera.viewportWidth/2; x += tileW) {
-        for (int y = (int)(camera.position.y - camera.viewportHeight/2) / tileH * tileH;
-                 y < camera.position.y + camera.viewportHeight/2; y += tileH) {
-            
-            batch.draw(background, x, y);
+        // Draw enough tiles to cover the camera view
+        for (int x = (int) (camera.position.x - camera.viewportWidth / 2) / tileW * tileW; x < camera.position.x
+                + camera.viewportWidth / 2; x += tileW) {
+            for (int y = (int) (camera.position.y - camera.viewportHeight / 2) / tileH * tileH; y < camera.position.y
+                    + camera.viewportHeight / 2; y += tileH) {
+
+                batch.draw(background, x, y);
+            }
         }
-    }
 
-    
         enemySprite.draw(batch);
         for (CannonBall b : cannonballs) {
-    b.draw(batch);
-}
+            b.draw(batch);
+          //  System.out.println(b.rect);
+        }
         shipSprite.draw(batch);
-        
+
         batch.end();
 
         // --- Stage ---
         stage.act(dt);
         stage.draw();
-        
-        Rectangle player = new Rectangle(x, y, image.getWidth(), image.getHeight());
-        Rectangle enemy = new Rectangle(x,y,cannonball.getWidth(), cannonball.getHeight());
-       if (player.overlaps(enemy)){
-        
-       }
-       
+
        
         
-        
-        
-
-        
-        
-       
-
-    
-       
-
-
-
-
-
+        for (CannonBall b : cannonballs) {
+            if (enemySprite.getBoundingRectangle().overlaps(b.rect)) {
+                System.out.println("ello");
+            }
+        }
 
     }
 
     @Override
     public void dispose() {
-        
+
         batch.dispose();
         image.dispose();
         image2.dispose();
