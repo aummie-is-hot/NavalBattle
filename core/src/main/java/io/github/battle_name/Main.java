@@ -24,7 +24,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import java.util.ArrayList;
-
+import java.util.Random;
 /**
  * {@link com.badlogic.gdx.ApplicationListener} implementation shared by all
  * platforms.
@@ -60,8 +60,129 @@ public class Main extends ApplicationAdapter {
             // cannonballhit = new Rectangle(x,y,tex.getWidth(), tex.getHeight());
         }
     }
+    public class Enemy {
 
+    public float x, y;
+    public float health;
+    public Sprite sprite;
+    public Rectangle rect;
+    public float speed;
+
+    public Enemy(float x, float y, float health, float speed, Texture texture) {
+        this.x = x;
+        this.y = y;
+        this.health = health;
+        this.speed = speed;
+
+        this.sprite = new Sprite(texture);
+        this.sprite.setOriginCenter(); // Important for rotation
+        this.sprite.setPosition(x - sprite.getOriginX(), y - sprite.getOriginY());
+
+        this.rect = new Rectangle(x, y, sprite.getWidth(), sprite.getHeight());
+    }
+
+    public void update(float dt, float playerX, float playerY) {
+        // Direction vector
+        float dx = playerX - x;
+        float dy = playerY - y;
+
+        // Normalize
+        float length = (float) Math.sqrt(dx * dx + dy * dy);
+        if (length != 0) {
+            dx /= length;
+            dy /= length;
+        }
+
+        // Move toward player
+        x += dx * speed * dt;
+        y += dy * speed * dt;
+
+        // Update rectangle for collisions
+        rect.x = x - sprite.getOriginX();
+        rect.y = y - sprite.getOriginY();
+
+        // Calculate rotation angle in degrees
+        float angle = (float) Math.toDegrees(Math.atan2(dy, dx));
+
+        // Rotate sprite
+        sprite.setRotation(angle);
+
+        // Update sprite position
+        sprite.setPosition(x - sprite.getOriginX(), y - sprite.getOriginY());
+    }
+
+    public void draw(SpriteBatch batch) {
+        sprite.draw(batch);
+    }
+
+    public boolean isDead() {
+        return health <= 0;
+    }
+
+    public void dispose() {
+        sprite.getTexture().dispose();
+    }
+}
+
+    public void spawnEnemy() {
+    float randX = 100 + random.nextFloat() * (WORLD_WIDTH - 200);
+float randY = 100 + random.nextFloat() * (WORLD_HEIGHT - 200);
+float randHealth = 10 + random.nextInt(20);
+float speed = 100 + random.nextFloat() * 100; // 100–200 speed
+Texture enemyTexture = new Texture("ship.png");
+
+enemies.add(new Enemy(randX, randY, randHealth, speed, enemyTexture));
+}    
+
+public class Radar {
+
+    private float radarX, radarY;
+    private float radarRadius;
+    private float radarRange;
+    private ShapeRenderer sr;
+
+    public Radar(float radarX, float radarY, float radarRadius, float radarRange) {
+        this.radarX = radarX;
+        this.radarY = radarY;
+        this.radarRadius = radarRadius;
+        this.radarRange = radarRange;
+        sr = new ShapeRenderer();
+    }
+
+    public void render(float playerX, float playerY, ArrayList<Enemy> enemies) {
+        sr.begin(ShapeRenderer.ShapeType.Filled);
+
+        // Radar background
+        sr.setColor(0, 0, 0, 0.5f);
+        sr.circle(radarX, radarY, radarRadius);
+
+        // Player at center
+        sr.setColor(0, 1, 0, 1);
+        sr.circle(radarX, radarY, 5);
+
+        // Enemies
+        sr.setColor(1, 0, 0, 1);
+        for (Enemy e : enemies) {
+            float dx = e.x - playerX;
+            float dy = e.y - playerY;
+            float distance = (float)Math.sqrt(dx*dx + dy*dy);
+
+            if (distance <= radarRange) {
+                float blipX = radarX + (dx / radarRange) * radarRadius;
+                float blipY = radarY + (dy / radarRange) * radarRadius;
+                sr.circle(blipX, blipY, 3);
+            }
+        }
+
+        sr.end();
+    }
+
+    public void dispose() {
+        sr.dispose();
+    }
+}
     ArrayList<CannonBall> cannonballs = new ArrayList<>();
+    ArrayList<Enemy> enemies = new ArrayList<>();
     private SpriteBatch batch;
     private Texture image;
     private Texture image2;
@@ -95,11 +216,18 @@ public class Main extends ApplicationAdapter {
     float speed = 300;
     boolean enemyhit = false;
     boolean shoot = true;
+    Radar radar;
+    Random random = new Random();
 
     @Override
     public void create() {
         batch = new SpriteBatch();
-
+         radar = new Radar(
+        Gdx.graphics.getWidth() - 50,  // radar top-right corner X
+        Gdx.graphics.getHeight() - 50, // radar top-right corner Y
+        50,                            // radar radius on screen
+        2000                            // radar detection range in world units
+    );
         background = new Texture("water_tile.png");
         cannonball = new Texture("cannon.png");
 
@@ -132,7 +260,7 @@ public class Main extends ApplicationAdapter {
     public void render() {
 
         
-
+        // radar
         float dt = Gdx.graphics.getDeltaTime();
         bulletsL = bulletsLeft.size();
         bulletsR = bulletsRight.size();
@@ -203,6 +331,12 @@ public class Main extends ApplicationAdapter {
         batch.begin();
         int tileW = background.getWidth();
         int tileH = background.getHeight();
+         if (Math.random() < 0.001) {
+            spawnEnemy();
+        }
+
+        // update enemies
+       
 
         // Draw enough tiles to cover the camera view
         for (int x = (int) (camera.position.x - camera.viewportWidth / 2) / tileW * tileW; x < camera.position.x
@@ -213,8 +347,9 @@ public class Main extends ApplicationAdapter {
                 batch.draw(background, x, y);
             }
         }
+        
         if (enemyhealth>0){
-
+        
         enemySprite.draw(batch);
         }
         for (CannonBall b : cannonballs) {
@@ -222,27 +357,44 @@ public class Main extends ApplicationAdapter {
           //  System.out.println(b.rect);
         }
         shipSprite.draw(batch);
+        for (Enemy e : enemies) {
+    e.draw(batch);
+    e.update(dt, x, y);
+    
+    
 
+}
         batch.end();
-
+          radar.render(x, y, enemies);
         // --- Stage ---
         stage.act(dt);
         stage.draw();
-
+     
        
         
-        for (CannonBall b : cannonballs) {
-            if (enemySprite.getBoundingRectangle().overlaps(b.rect) && enemyhealth >0){
-                System.out.println("ello");
+        for (int i = cannonballs.size() - 1; i >= 0; i--) {
+    CannonBall b = cannonballs.get(i);
 
-                enemyhealth=enemyhealth-1;
-                cannonballs.remove(b);
+    for (int j = enemies.size() - 1; j >= 0; j--) {
+        Enemy e = enemies.get(j);
 
-              
-                break;
+        if (e.rect.overlaps(b.rect)) {
+
+            
+
+            e.health -= 10;
+            cannonballs.remove(i);
+
+            // remove enemy if dead
+            if (e.health <= 0) {
+                enemies.remove(j);
             }
-           
+
+            break; // stop checking this cannonball
         }
+    }
+}
+        
 
     }
 
