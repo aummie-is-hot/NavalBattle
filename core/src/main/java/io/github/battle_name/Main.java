@@ -223,9 +223,9 @@ public class Radar {
     public void create() {
         batch = new SpriteBatch();
          radar = new Radar(
-        Gdx.graphics.getWidth() - 50,  // radar top-right corner X
-        Gdx.graphics.getHeight() - 50, // radar top-right corner Y
-        50,                            // radar radius on screen
+        Gdx.graphics.getWidth() - 60,  // radar top-right corner X
+        Gdx.graphics.getHeight() - 60, // radar top-right corner Y
+        60,                            // radar radius on screen
         2000                            // radar detection range in world units
     );
         background = new Texture("water_tile.png");

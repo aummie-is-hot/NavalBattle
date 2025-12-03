@@ -21876,9 +21876,9 @@ igb_Main_create = $this => {
     $this.$batch = cbggg_SpriteBatch__init_();
     var$1 = new igb_Main$Radar;
     var$2 = cbg_Gdx_graphics;
-    var$3 = var$2.$getWidth0() - 50 | 0;
+    var$3 = var$2.$getWidth0() - 60 | 0;
     var$2 = cbg_Gdx_graphics;
-    igb_Main$Radar__init_(var$1, $this, var$3, var$2.$getHeight0() - 50 | 0, 50.0, 2000.0);
+    igb_Main$Radar__init_(var$1, $this, var$3, var$2.$getHeight0() - 60 | 0, 60.0, 2000.0);
     $this.$radar = var$1;
     $this.$background0 = cbgg_Texture__init_4($rt_s(449));
     $this.$cannonball = cbgg_Texture__init_4($rt_s(450));
