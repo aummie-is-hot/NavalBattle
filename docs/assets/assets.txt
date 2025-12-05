@@ -9,6 +9,9 @@ i:b:/shiprightdown.png:44309:1
 i:b:/shiprightup.png:44268:1
 i:b:/water_tile.png:23545:1
 i:b:/cannon.png:968:1
+i:b:/tank.png:35995:1
+i:b:/speedboat.png:14112:1
+i:b:/jet.png:4429:1
 c:b:/com/badlogic/gdx/utils/lsans-15.png:10270:1
 c:b:/com/badlogic/gdx/graphics/g3d/shaders/default.vertex.glsl:9096:1
 c:b:/com/badlogic/gdx/graphics/g3d/particles/particles.fragment.glsl:820:1

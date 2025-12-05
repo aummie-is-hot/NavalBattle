@@ -60,22 +60,42 @@ public class Main extends ApplicationAdapter {
             // cannonballhit = new Rectangle(x,y,tex.getWidth(), tex.getHeight());
         }
     }
+    public enum EnemyType {
+    JET(10, 350, "jet.png"),
+    FAST(20, 300, "speedboat.png"),
+    TANK(150, 100, "tank.png"),
+    NORMAL(80, 150, "ship.png");
+
+    public final float health;
+    public final float speed;
+    public final String texture;
+
+    EnemyType(float health, float speed, String texture) {
+        this.health = health;
+        this.speed = speed;
+        this.texture = texture;
+    }
+}
     public class Enemy {
 
     public float x, y;
     public float health;
+    public float speed;
     public Sprite sprite;
     public Rectangle rect;
-    public float speed;
+    public EnemyType type;
 
-    public Enemy(float x, float y, float health, float speed, Texture texture) {
+    public Enemy(float x, float y, EnemyType type) {
         this.x = x;
         this.y = y;
-        this.health = health;
-        this.speed = speed;
+        this.type = type;
 
-        this.sprite = new Sprite(texture);
-        this.sprite.setOriginCenter(); // Important for rotation
+        this.health = type.health;
+        this.speed = type.speed;
+
+        Texture t = new Texture(type.texture);
+        this.sprite = new Sprite(t);
+        this.sprite.setOriginCenter();
         this.sprite.setPosition(x - sprite.getOriginX(), y - sprite.getOriginY());
 
         this.rect = new Rectangle(x, y, sprite.getWidth(), sprite.getHeight());
@@ -127,11 +147,10 @@ public class Main extends ApplicationAdapter {
     public void spawnEnemy() {
     float randX = 100 + random.nextFloat() * (WORLD_WIDTH - 200);
 float randY = 100 + random.nextFloat() * (WORLD_HEIGHT - 200);
-float randHealth = 10 + random.nextInt(20);
-float speed = 100 + random.nextFloat() * 100; // 100–200 speed
-Texture enemyTexture = new Texture("ship.png");
+// Pick a random type
+    EnemyType type = EnemyType.values()[random.nextInt(EnemyType.values().length)];
 
-enemies.add(new Enemy(randX, randY, randHealth, speed, enemyTexture));
+    enemies.add(new Enemy(randX, randY, type));
 }    
 
 public class Radar {
@@ -260,7 +279,7 @@ public class Radar {
     public void render() {
 
         
-        // radar
+        // charged shot + refresh radar with space bar + better enemy types + stealth boat and jet+damaged ship models for diffreant levels of health
         float dt = Gdx.graphics.getDeltaTime();
         bulletsL = bulletsLeft.size();
         bulletsR = bulletsRight.size();
@@ -381,8 +400,15 @@ public class Radar {
         if (e.rect.overlaps(b.rect)) {
 
             
-
-            e.health -= 10;
+            int crit = random.nextInt(10);
+            if (crit ==9){
+                e.health-=30;
+                System.out.println("CRITCAL HIT!");
+            }
+            else{
+                e.health -= 10;
+            }
+            
             cannonballs.remove(i);
 
             // remove enemy if dead
@@ -393,6 +419,11 @@ public class Radar {
             break; // stop checking this cannonball
         }
     }
+}       for (Enemy e : enemies) {
+
+    if(e.rect.overlaps(shipSprite.getBoundingRectangle())){
+       // System.exit(0);
+        }
 }
         
 
