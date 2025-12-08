@@ -30,19 +30,20 @@ import java.util.Random;
  * platforms.
  */
 public class Main extends ApplicationAdapter {
-    // Rectangle cannonballhit;
+    
     class CannonBall {
         float x, y;
         float angle; // degrees
         float speed = 900;
         Texture tex;
         Rectangle rect;
-
+        
         public CannonBall(float x, float y, float angle, Texture tex) {
             this.x = x;
             this.y = y;
             this.angle = angle;
             this.tex = tex;
+            
             this.rect = new Rectangle(x, y, tex.getWidth(), tex.getHeight());
         }
 
@@ -55,14 +56,15 @@ public class Main extends ApplicationAdapter {
 
         public void draw(SpriteBatch batch) {
             batch.draw(tex, this.x - tex.getWidth() / 2f, this.y - tex.getHeight() / 2f);
+      
             this.rect.x = this.x;
             this.rect.y= this.y;
             // cannonballhit = new Rectangle(x,y,tex.getWidth(), tex.getHeight());
         }
     }
     public enum EnemyType {
-    JET(10, 350, "jet.png"),
-    FAST(20, 300, "speedboat.png"),
+    JET(10, 290, "jet.png"),
+    FAST(20, 250, "speedboat.png"),
     TANK(150, 100, "tank.png"),
     NORMAL(80, 150, "ship.png");
 
@@ -152,13 +154,38 @@ float randY = 100 + random.nextFloat() * (WORLD_HEIGHT - 200);
 
     enemies.add(new Enemy(randX, randY, type));
 }    
+class Island {
+    float x, y;
+    Texture tex;
+    float supplyvalue;
+
+    public Island(float x, float y, Texture tex, float supplyvalue) {
+        this.x = x;
+        this.y = y;
+        this.tex = tex;
+        this.supplyvalue = supplyvalue;
+        // 400x400 detection zone (change this for range)
+    }
+
+    public void draw(SpriteBatch batch) {
+        batch.draw(tex, x - tex.getWidth()/2f, y - tex.getHeight()/2f);
+    }
+
+   public boolean isPlayerNear(float px, float py) {
+    float dx = px - x;
+    float dy = py - y;
+    float distance = (float)Math.sqrt(dx*dx + dy*dy);
+    return distance <= 500; // 1000 units detection radius
+}
+}
 
 public class Radar {
-
     private float radarX, radarY;
     private float radarRadius;
     private float radarRange;
     private ShapeRenderer sr;
+
+    public Main.Enemy lockedEnemy = null; // currently locked-on enemy
 
     public Radar(float radarX, float radarY, float radarRadius, float radarRange) {
         this.radarX = radarX;
@@ -168,7 +195,7 @@ public class Radar {
         sr = new ShapeRenderer();
     }
 
-    public void render(float playerX, float playerY, ArrayList<Enemy> enemies) {
+    public void render(float playerX, float playerY, ArrayList<Main.Enemy> enemies) {
         sr.begin(ShapeRenderer.ShapeType.Filled);
 
         // Radar background
@@ -180,8 +207,7 @@ public class Radar {
         sr.circle(radarX, radarY, 5);
 
         // Enemies
-        sr.setColor(1, 0, 0, 1);
-        for (Enemy e : enemies) {
+        for (Main.Enemy e : enemies) {
             float dx = e.x - playerX;
             float dy = e.y - playerY;
             float distance = (float)Math.sqrt(dx*dx + dy*dy);
@@ -189,7 +215,17 @@ public class Radar {
             if (distance <= radarRange) {
                 float blipX = radarX + (dx / radarRange) * radarRadius;
                 float blipY = radarY + (dy / radarRange) * radarRadius;
-                sr.circle(blipX, blipY, 3);
+
+                if (e == lockedEnemy) {
+                    // Locked-on: green square
+                    sr.setColor(0, 1, 0, 1);
+                    float size = 6;
+                    sr.rect(blipX - size/2f, blipY - size/2f, size, size);
+                } else {
+                    // Normal: red circle
+                    sr.setColor(1, 0, 0, 1);
+                    sr.circle(blipX, blipY, 3);
+                }
             }
         }
 
@@ -199,7 +235,71 @@ public class Radar {
     public void dispose() {
         sr.dispose();
     }
+} class Missile {
+    float x, y;
+    float speed = 500;
+    float angle;
+    Enemy target;
+    Texture tex;
+    boolean hit = false;
+    Rectangle rect;
+
+    public Missile(float x, float y, Enemy target, Texture tex) {
+        this.x = x;
+        this.y = y;
+        this.target = target;
+        this.tex = tex;
+        this.rect = new Rectangle(x - tex.getWidth()/2f, y - tex.getHeight()/2f, tex.getWidth(), tex.getHeight());
+    }
+
+    public void update(float dt) {
+        if (hit || target == null || target.isDead()) return;
+
+        float dx = target.x - x;
+        float dy = target.y - y;
+        float dist = (float) Math.sqrt(dx*dx + dy*dy);
+
+        if (dist > 0) {
+            dx /= dist;
+            dy /= dist;
+
+            x += dx * speed * dt;
+            y += dy * speed * dt;
+
+            angle = (float) Math.toDegrees(Math.atan2(dy, dx));
+
+            rect.setPosition(x - tex.getWidth()/2f, y - tex.getHeight()/2f);
+
+            if (rect.overlaps(target.rect)) {
+    hit = true;
+    target.health -= 10000; // instant kill
+    System.out.println("MISSILE HIT " + target.type);
+
+    // remove target immediately from enemies list
+    Main.this.enemies.remove(target);
+
+    // clear radar lock
+    if (radar.lockedEnemy == target) {
+        radar.lockedEnemy = null;
+    }
 }
+        }
+    }
+
+    public void draw(SpriteBatch batch) {
+        batch.draw(tex, x - tex.getWidth()/2f, y - tex.getHeight()/2f,
+                   tex.getWidth()/2f, tex.getHeight()/2f,
+                   tex.getWidth(), tex.getHeight(),
+                   1, 1, angle, 0, 0,
+                   tex.getWidth(), tex.getHeight(), false, false);
+    }
+}
+
+
+int maxMissileAmmo =5;
+    int missles = 5;
+   int maxcannonammo = 150;
+    int ammo = 150;
     ArrayList<CannonBall> cannonballs = new ArrayList<>();
     ArrayList<Enemy> enemies = new ArrayList<>();
     private SpriteBatch batch;
@@ -237,9 +337,16 @@ public class Radar {
     boolean shoot = true;
     Radar radar;
     Random random = new Random();
-
+    ArrayList<Island> islands = new ArrayList<>();
+    Texture islandTex;
+    private BitmapFont font;
+    ArrayList<Missile> missiles = new ArrayList<>();
+    Texture missleTex; // your missile texture
     @Override
     public void create() {
+        missleTex = new Texture("missle.png");
+        font = new BitmapFont(); // default font
+font.getData().setScale(2f); // optional: make it bigger
         batch = new SpriteBatch();
          radar = new Radar(
         Gdx.graphics.getWidth() - 60,  // radar top-right corner X
@@ -247,6 +354,20 @@ public class Radar {
         60,                            // radar radius on screen
         2000                            // radar detection range in world units
     );
+        islandTex = new Texture("island.png");
+
+    Random random = new Random();
+
+    int NUM_ISLANDS = 20;   // generate 20 islands
+    int WORLD_SIZE = 10000; // change to your world size
+
+    for (int i = 0; i < NUM_ISLANDS; i++) {
+        float ix = random.nextFloat() * WORLD_SIZE;
+        float iy = random.nextFloat() * WORLD_SIZE;
+
+        islands.add(new Island(ix, iy, islandTex, random.nextFloat(0,5)));
+    }
+
         background = new Texture("water_tile.png");
         cannonball = new Texture("cannon.png");
 
@@ -279,29 +400,44 @@ public class Radar {
     public void render() {
 
         
-        // charged shot + refresh radar with space bar + better enemy types + stealth boat and jet+damaged ship models for diffreant levels of health
+        // charged shot + refresh radar with space bar + better enemy types + stealth boat and jet+damaged ship models for diffreant levels of health + player health+missles+islands to restock bullets and missles
         float dt = Gdx.graphics.getDeltaTime();
         bulletsL = bulletsLeft.size();
         bulletsR = bulletsRight.size();
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+        radar.lockedEnemy = null;
+float nearestDist = Float.MAX_VALUE;
+for (Enemy e : enemies) {
+    float dx = e.x - x;
+    float dy = e.y - y;
+    float dist = (float)Math.sqrt(dx*dx + dy*dy);
+    if (dist < nearestDist && dist <= radar.radarRange) {
+        nearestDist = dist;
+        radar.lockedEnemy = e;
+    }
+}
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)&&ammo>0) {
             float rad = (float) Math.toRadians(playerRotation + 90); // left side
             float spawnX = x + MathUtils.cos(rad) * 60;
             float spawnY = y + MathUtils.sin(rad) * 60;
-
+            ammo = ammo-1;
             cannonballs.add(new CannonBall(spawnX, spawnY, playerRotation + 90, cannonball));
 
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)&&ammo>0) {
             float rad = (float) Math.toRadians(playerRotation - 90); // right side
             float spawnX = x + MathUtils.cos(rad) * 60;
             float spawnY = y + MathUtils.sin(rad) * 60;
-
+            ammo = ammo-1;
             cannonballs.add(new CannonBall(spawnX, spawnY, playerRotation - 90, cannonball));
 
         }
-
+        if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+    if(radar.lockedEnemy != null && missles > 0) {
+        missiles.add(new Missile(x, y, radar.lockedEnemy, missleTex));
+        missles--;
+    }
+}
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             playerRotation += 150 * dt;
         }
@@ -383,6 +519,45 @@ public class Radar {
     
 
 }
+
+for (int i = missiles.size() - 1; i >= 0; i--) {
+    Missile m = missiles.get(i);
+    m.update(dt);
+    m.draw(batch);
+
+    if (m.hit) missiles.remove(i);
+}
+for (Island isl : islands) {
+    if(isl.supplyvalue>0){
+        // instead of dissapear when out of supplys make it have a cooldown for supply
+     isl.draw(batch);
+      if (isl.isPlayerNear(x, y)) {
+
+        // show UI prompt
+        font.draw(batch, "Press G to Resupply", 
+            camera.position.x - 50, camera.position.y + 100);
+
+        // if E pressed -> refill
+        if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
+            isl.supplyvalue=isl.supplyvalue-1;
+            ammo = maxcannonammo;
+            missles = maxMissileAmmo;
+            
+            //playerHealth = maxPlayerHealth;
+
+            // OPTIONAL: feedback
+            System.out.println("Resupplied at island!");
+        }
+    }
+    }
+   
+}
+font.draw(batch, "Ammo: "+ammo, 
+            camera.position.x -800, camera.position.y + 400);
+       
+font.draw(batch, "Missiles: " + missles, camera.position.x - 800, camera.position.y + 350);
+
+
         batch.end();
           radar.render(x, y, enemies);
         // --- Stage ---
@@ -431,7 +606,7 @@ public class Radar {
 
     @Override
     public void dispose() {
-
+        font.dispose(); // add this
         batch.dispose();
         image.dispose();
         image2.dispose();
