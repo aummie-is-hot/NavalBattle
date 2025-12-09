@@ -325,7 +325,30 @@ public class Radar {
         );
     }
 }
+public void repairShip() {
+    int missing = maxHealth - playerHealth;
 
+    if (missing <= 0) {
+        System.out.println("Already full health!");
+        return;
+    }
+
+    if (playerSteel <= 0) {
+        System.out.println("Not enough steel!");
+        return;
+    }
+
+    int heal = Math.min(missing, playerSteel);
+
+    playerHealth += heal;
+    playerSteel -= heal;
+
+    System.out.println("Healed: " + heal);
+}
+public void applyDamage(int damage) {
+    playerHealth -= damage;
+    if (playerHealth < 0) playerHealth = 0;
+}
 TextButton mainButton;
 TextButton option1;
 TextButton option2;
@@ -382,6 +405,9 @@ int maxMissileAmmo =5;
     Skin skin;
     boolean optionsVisible = false;
     private Stage hudStage;
+    int maxHealth = 100;
+int playerHealth = 100;
+int playerSteel = 20;
     @Override
     public void create() {
         
@@ -447,8 +473,8 @@ buttonStyle.fontColor = Color.WHITE; // optional
     mainButton.setPosition(50, 400);
     mainButton.setSize(300,60);
     hudStage.addActor(mainButton);
-
-    option1 = new TextButton("Option 1", buttonStyle);
+    int hurt = maxHealth-playerHealth;
+    option1 = new TextButton("Heal using steel: "+hurt, buttonStyle);
     option1.setPosition(50, 360);
     option1.setSize(200, 40);
     option1.setVisible(false);
@@ -475,6 +501,12 @@ buttonStyle.fontColor = Color.WHITE; // optional
             option3.setVisible(visible);
         }
     });
+    option1.addListener(new ClickListener() {
+    @Override
+    public void clicked(InputEvent event, float x, float y) {
+        repairShip();
+    }
+});
     }
 
     @Override
@@ -687,7 +719,7 @@ hudStage.draw();
 }       for (Enemy e : enemies) {
 
     if(e.rect.overlaps(shipSprite.getBoundingRectangle())){
-       // System.exit(0);
+       applyDamage(10);
         }
 }
         
