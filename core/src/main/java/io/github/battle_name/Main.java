@@ -11,11 +11,17 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
@@ -25,6 +31,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import java.util.ArrayList;
 import java.util.Random;
+import com.badlogic.gdx.math.Matrix4;
 /**
  * {@link com.badlogic.gdx.ApplicationListener} implementation shared by all
  * platforms.
@@ -237,7 +244,7 @@ public class Radar {
     }
 } class Missile {
     float x, y;
-    float speed = 500;
+    float speed = 1500;
     float angle;
     Enemy target;
     Texture tex;
@@ -319,10 +326,16 @@ public class Radar {
     }
 }
 
+TextButton mainButton;
+TextButton option1;
+TextButton option2;
+TextButton option3;
+
+boolean open = false;
 int maxMissileAmmo =5;
-    int missles = 5;
+    int missles = maxMissileAmmo;
    int maxcannonammo = 150;
-    int ammo = 150;
+    int ammo = maxcannonammo;
     ArrayList<CannonBall> cannonballs = new ArrayList<>();
     ArrayList<Enemy> enemies = new ArrayList<>();
     private SpriteBatch batch;
@@ -365,8 +378,14 @@ int maxMissileAmmo =5;
     private BitmapFont font;
     ArrayList<Missile> missiles = new ArrayList<>();
     Texture missleTex; // your missile texture
+    Texture buttonTexture;
+    Skin skin;
+    boolean optionsVisible = false;
+    private Stage hudStage;
     @Override
     public void create() {
+        
+        Gdx.input.setInputProcessor(stage);
         missleTex = new Texture("missle2.png");
         font = new BitmapFont(); // default font
 font.getData().setScale(2f); // optional: make it bigger
@@ -378,7 +397,12 @@ font.getData().setScale(2f); // optional: make it bigger
         2000                            // radar detection range in world units
     );
         islandTex = new Texture("island.png");
-
+        buttonTexture = new Texture("island.png");
+    TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+buttonStyle.up = new TextureRegionDrawable(new TextureRegion(buttonTexture));   // normal
+buttonStyle.down = new TextureRegionDrawable(new TextureRegion(buttonTexture)); // pressed
+buttonStyle.font = font;
+buttonStyle.fontColor = Color.WHITE; // optional
     Random random = new Random();
 
     int NUM_ISLANDS = 20;   // generate 20 islands
@@ -411,17 +435,58 @@ font.getData().setScale(2f); // optional: make it bigger
         // Start camera centered on player
         camera.position.set(x + image.getWidth() / 2f, y + image.getHeight() / 2f, 0);
         camera.update();
+        BitmapFont font = new BitmapFont();
+     stage = new Stage(viewport); // still can be used for world-based UI if needed
 
+    // HUD stage (fixed on screen)
+    hudStage = new Stage(new ScreenViewport());
+    Gdx.input.setInputProcessor(hudStage);
+
+    // --- Add buttons to hudStage instead ---
+    mainButton = new TextButton("Click for options", buttonStyle);
+    mainButton.setPosition(50, 400);
+    mainButton.setSize(300,60);
+    hudStage.addActor(mainButton);
+
+    option1 = new TextButton("Option 1", buttonStyle);
+    option1.setPosition(50, 360);
+    option1.setSize(200, 40);
+    option1.setVisible(false);
+    hudStage.addActor(option1);
+
+    option2 = new TextButton("Option 2", buttonStyle);
+    option2.setPosition(50, 320);
+    option2.setSize(200, 40);
+    option2.setVisible(false);
+    hudStage.addActor(option2);
+
+    option3 = new TextButton("Option 3", buttonStyle);
+    option3.setPosition(50, 280);
+    option3.setSize(200, 40);
+    option3.setVisible(false);
+    hudStage.addActor(option3);
+
+    mainButton.addListener(new ClickListener() {
+        @Override
+        public void clicked(InputEvent event, float x, float y) {
+            boolean visible = !option1.isVisible();
+            option1.setVisible(visible);
+            option2.setVisible(visible);
+            option3.setVisible(visible);
+        }
+    });
     }
 
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
+           hudStage.getViewport().update(width, height, true); // HUD viewport
     }
 
     @Override
     public void render() {
-
+         // CLICK HANDLING
+    
         
         // charged shot + refresh radar with space bar + better enemy types + stealth boat and jet+damaged ship models for diffreant levels of health + player health+missles+islands to restock bullets and missles
         float dt = Gdx.graphics.getDeltaTime();
@@ -585,8 +650,10 @@ font.draw(batch, "Missiles: " + missles, camera.position.x - 800, camera.positio
           radar.render(x, y, enemies);
         // --- Stage ---
         stage.act(dt);
+        
         stage.draw();
-     
+        hudStage.act(dt);
+hudStage.draw();
        
         
         for (int i = cannonballs.size() - 1; i >= 0; i--) {
@@ -624,7 +691,8 @@ font.draw(batch, "Missiles: " + missles, camera.position.x - 800, camera.positio
         }
 }
         
-
+    //handleHUDInput();  // process clicks first
+//drawHUD();         // draw buttons on top
     }
 
     @Override
