@@ -249,15 +249,26 @@ public class Radar {
         this.y = y;
         this.target = target;
         this.tex = tex;
-        this.rect = new Rectangle(x - tex.getWidth()/2f, y - tex.getHeight()/2f, tex.getWidth(), tex.getHeight());
+        this.rect = new Rectangle(x - tex.getWidth() / 2f, y - tex.getHeight() / 2f, tex.getWidth(), tex.getHeight());
     }
 
     public void update(float dt) {
-        if (hit || target == null || target.isDead()) return;
+        if (hit) return;
 
+        // Check if target is dead
+        if (target == null || target.isDead()) {
+            // Auto-lock to next radar-locked enemy if available
+            target = radar.lockedEnemy;
+            if (target == null) {
+                hit = true; // No valid target, missile will disappear
+                return;
+            }
+        }
+
+        // Move toward target
         float dx = target.x - x;
         float dy = target.y - y;
-        float dist = (float) Math.sqrt(dx*dx + dy*dy);
+        float dist = (float) Math.sqrt(dx * dx + dy * dy);
 
         if (dist > 0) {
             dx /= dist;
@@ -266,35 +277,47 @@ public class Radar {
             x += dx * speed * dt;
             y += dy * speed * dt;
 
+            // Update rotation
             angle = (float) Math.toDegrees(Math.atan2(dy, dx));
 
-            rect.setPosition(x - tex.getWidth()/2f, y - tex.getHeight()/2f);
+            // Update collision rectangle
+            rect.setPosition(x - tex.getWidth() / 2f, y - tex.getHeight() / 2f);
 
+            // Check hit
             if (rect.overlaps(target.rect)) {
-    hit = true;
-    target.health -= 10000; // instant kill
-    System.out.println("MISSILE HIT " + target.type);
+                hit = true;
+                target.health -= 10000; // instant kill
 
-    // remove target immediately from enemies list
-    Main.this.enemies.remove(target);
+                // Remove enemy from list
+                Main.this.enemies.remove(target);
 
-    // clear radar lock
-    if (radar.lockedEnemy == target) {
-        radar.lockedEnemy = null;
-    }
-}
+                // Clear radar lock if necessary
+                if (radar.lockedEnemy == target) radar.lockedEnemy = null;
+            }
         }
     }
 
     public void draw(SpriteBatch batch) {
-        batch.draw(tex, x - tex.getWidth()/2f, y - tex.getHeight()/2f,
-                   tex.getWidth()/2f, tex.getHeight()/2f,
-                   tex.getWidth(), tex.getHeight(),
-                   1, 1, angle, 0, 0,
-                   tex.getWidth(), tex.getHeight(), false, false);
+        batch.draw(
+            tex,
+            x - tex.getWidth() / 2f,
+            y - tex.getHeight() / 2f,
+            tex.getWidth() / 2f,
+            tex.getHeight() / 2f,
+            tex.getWidth(),
+            tex.getHeight(),
+            1f,
+            1f,
+            angle,
+            0,
+            0,
+            tex.getWidth(),
+            tex.getHeight(),
+            false,
+            false
+        );
     }
 }
-
 
 int maxMissileAmmo =5;
     int missles = 5;
@@ -344,7 +367,7 @@ int maxMissileAmmo =5;
     Texture missleTex; // your missile texture
     @Override
     public void create() {
-        missleTex = new Texture("missle.png");
+        missleTex = new Texture("missle2.png");
         font = new BitmapFont(); // default font
 font.getData().setScale(2f); // optional: make it bigger
         batch = new SpriteBatch();
@@ -365,7 +388,7 @@ font.getData().setScale(2f); // optional: make it bigger
         float ix = random.nextFloat() * WORLD_SIZE;
         float iy = random.nextFloat() * WORLD_SIZE;
 
-        islands.add(new Island(ix, iy, islandTex, random.nextFloat(0,5)));
+        islands.add(new Island(ix, iy, islandTex, random.nextFloat(0,3)));
     }
 
         background = new Texture("water_tile.png");
